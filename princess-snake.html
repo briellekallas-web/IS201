@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Princess Snake</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f5c6de;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Lato', sans-serif;
+    color: #7a2a6a;
+  }
+  .device {
+    background: #fde8f4;
+    border: 3px solid #d47ab8;
+    border-radius: 24px;
+    padding: 20px 20px 18px;
+    width: 544px;
+    user-select: none;
+    box-shadow: 0 4px 0 #c060a0, 0 8px 24px rgba(160,60,120,0.18);
+  }
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .game-title {
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    letter-spacing: 0.18em;
+    color: #9030a0;
+  }
+  .score-area { display: flex; gap: 18px; align-items: flex-end; }
+  .stat { text-align: right; }
+  .stat-label {
+    font-size: 8px; letter-spacing: 0.25em;
+    color: #c080c0; text-transform: uppercase;
+  }
+  .stat-value {
+    font-family: 'Cinzel', serif; font-size: 18px;
+    font-weight: 700; color: #7a1a90; line-height: 1.1;
+  }
+  .status-bar {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px; min-height: 24px;
+  }
+  .dragon-alert {
+    font-size: 10px; color: #c02020;
+    letter-spacing: 0.12em; text-transform: uppercase; display: none;
+    font-weight: 700;
+  }
+  .dragon-alert.visible { display: block; }
+  .crown-progress {
+    display: flex; gap: 4px; align-items: center; font-size: 13px;
+  }
+  .crown-pip { opacity: 0.2; transition: opacity 0.2s; }
+  .crown-pip.lit { opacity: 1; }
+  .speed-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
+  .speed-btn {
+    background: #fbd0ec; border: 1.5px solid #d898c8;
+    color: #9040a0; font-family: 'Lato', sans-serif;
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 20px; cursor: pointer; transition: all 0.15s;
+  }
+  .speed-btn.active {
+    border-color: #9030a0; color: #fff;
+    background: #b050c0;
+  }
+  .speed-btn:hover { background: #f0b8e0; }
+  .screen-wrap {
+    background: #fce4f2;
+    border: 2.5px solid #d484c0;
+    border-radius: 10px; padding: 6px; margin-bottom: 14px;
+  }
+  canvas { display: block; border-radius: 6px; }
+  .canvas-container { position: relative; }
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: rgba(253, 220, 240, 0.95);
+    border-radius: 6px; gap: 10px;
+  }
+  .overlay-title {
+    font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700;
+    color: #8020a0; letter-spacing: 0.15em;
+  }
+  .overlay-sub {
+    font-size: 10px; color: #b060b0;
+    letter-spacing: 0.25em; text-transform: uppercase;
+  }
+  .overlay-score { font-size: 13px; color: #9030a0; }
+  .btn {
+    background: #d060c0; border: none; color: #fff;
+    font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase; padding: 9px 26px; border-radius: 20px;
+    cursor: pointer; margin-top: 4px; transition: background 0.15s;
+    box-shadow: 0 3px 0 #9030a0;
+  }
+  .btn:hover { background: #b040a8; }
+  .controls {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 7px; width: 150px; margin: 0 auto;
+  }
+  .dpad-btn {
+    background: #f5b8e0; border: 2px solid #d070b8; border-radius: 50%;
+    width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #9030a0; font-size: 16px;
+    transition: background 0.1s, color 0.1s; -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 3px 0 #b858a0;
+  }
+  .dpad-btn:active, .dpad-btn.pressed {
+    background: #e090d0; color: #5a1070; box-shadow: none; transform: translateY(2px);
+  }
+  .dpad-empty { visibility: hidden; }
+  .bottom-row {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-top: 12px;
+  }
+  .gems { font-size: 13px; letter-spacing: 4px; color: #c070b8; }
+  .hint { font-size: 8px; color: #c898c0; letter-spacing: 0.15em; text-transform: uppercase; }
+  .divider {
+    height: 1px; background: #e8a8d8;
+    margin: 8px 0;
+  }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="top-bar">
+    <span class="game-title">👑 Princess Snake</span>
+    <div class="score-area">
+      <div class="stat">
+        <div class="stat-label">Best</div>
+        <div class="stat-value" id="best">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Score</div>
+        <div class="stat-value" id="score">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="status-bar">
+    <div class="dragon-alert" id="dragonAlert">🐉 Dragon approaches!</div>
+    <div style="flex:1"></div>
+    <div class="crown-progress" id="crownProgress" style="display:none">
+      <span style="font-size:9px;color:#c070b0;letter-spacing:0.12em;text-transform:uppercase;margin-right:4px;">banish:</span>
+      <span class="crown-pip" id="pip0">👑</span>
+      <span class="crown-pip" id="pip1">👑</span>
+      <span class="crown-pip" id="pip2">👑</span>
+    </div>
+  </div>
+
+  <div class="speed-row">
+    <button class="speed-btn active" data-speed="slow">Slow</button>
+    <button class="speed-btn" data-speed="normal">Normal</button>
+    <button class="speed-btn" data-speed="fast">Fast</button>
+  </div>
+
+  <div class="screen-wrap">
+    <div class="canvas-container">
+      <canvas id="game" width="500" height="400"></canvas>
+      <div class="overlay" id="overlay">
+        <div style="font-size:36px;margin-bottom:2px;">👑</div>
+        <div class="overlay-title">Princess Snake</div>
+        <div class="overlay-sub">Enchanted Edition</div>
+        <div style="font-size:11px;color:#b070a0;max-width:240px;text-align:center;line-height:1.7;margin-top:6px;">
+          Collect golden crowns to grow your royal gown.<br>
+          Every 5 crowns, a dragon appears!<br>
+          Eat 3 more crowns to banish it.
+        </div>
+        <button class="btn" id="startBtn">Begin Quest</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="dpad-empty"></div>
+    <div class="dpad-btn" data-dir="UP">▲</div>
+    <div class="dpad-empty"></div>
+    <div class="dpad-btn" data-dir="LEFT">◀</div>
+    <div class="dpad-empty"></div>
+    <div class="dpad-btn" data-dir="RIGHT">▶</div>
+    <div class="dpad-empty"></div>
+    <div class="dpad-btn" data-dir="DOWN">▼</div>
+    <div class="dpad-empty"></div>
+  </div>
+
+  <div class="bottom-row">
+    <div class="gems">✦ ✧ ✦ ✧ ✦</div>
+    <div class="hint">Arrow keys or D-Pad</div>
+    <div class="gems">✦ ✧ ✦ ✧ ✦</div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+const dragonAlert = document.getElementById('dragonAlert');
+const crownProgress = document.getElementById('crownProgress');
+
+const GRID = 20;
+const COLS = canvas.width / GRID;   // 25
+const ROWS = canvas.height / GRID;  // 20
+
+const SPEEDS = { slow: 200, normal: 120, fast: 65 };
+let currentSpeed = 'slow';
+let intervalMs = SPEEDS[currentSpeed];
+
+// Dragon frequency: every N crowns a dragon spawns. Starts at 5, decreases as score rises.
+function dragonInterval() {
+  if (score < 10) return 5;
+  if (score < 20) return 4;
+  if (score < 35) return 3;
+  return 2;
+}
+
+// Dragon move rate: moves every N game steps. Decreases (speeds up) with score.
+function dragonMoveRate() {
+  if (score < 10) return 3;
+  if (score < 20) return 2;
+  return 1;
+}
+
+const C = {
+  bg: '#fce8f4',
+  grid: '#f5d0ea',
+  snakeBody: '#e060b0',
+  snakeBorder: '#b83090',
+  snakeInner: '#ee80c4',
+  goldBright: '#ffd700',
+  goldMid: '#e6a800',
+  goldDark: '#b87800',
+  dragonBody: '#2a9a2a',
+  dragonDark: '#1a6a1a',
+  dragonMid: '#3aba3a',
+  dragonAccent: '#60d060',
+  dragonFire: '#ff5010',
+  dragonFireInner: '#ffcc00',
+};
+
+let snake, dir, nextDir, food, score, best;
+let gameLoop, running;
+let dragon, dragonActive, crownsToDispel;
+let flashMsg, flashTimer;
+let dragonMoveCounter;
+let nextDragonAt;
+best = 0;
+
+function init() {
+  snake = [{ x: 7, y: 10 }, { x: 6, y: 10 }, { x: 5, y: 10 }, { x: 4, y: 10 }];
+  dir = { x: 1, y: 0 };
+  nextDir = { x: 1, y: 0 };
+  food = spawnItem([]);
+  score = 0;
+  running = true;
+  dragon = null;
+  dragonActive = false;
+  crownsToDispel = 0;
+  flashMsg = null;
+  flashTimer = 0;
+  dragonMoveCounter = 0;
+  nextDragonAt = dragonInterval();
+  scoreEl.textContent = 0;
+  dragonAlert.classList.remove('visible');
+  crownProgress.style.display = 'none';
+  updatePips();
+  draw();
+}
+
+function spawnItem(extra) {
+  let pos;
+  const blocked = [...snake, ...extra];
+  do {
+    pos = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+  } while (blocked.some(s => s.x === pos.x && s.y === pos.y));
+  return pos;
+}
+
+function spawnDragon() {
+  const edges = [];
+  for (let x = 0; x < COLS; x++) { edges.push({x, y:0}); edges.push({x, y:ROWS-1}); }
+  for (let y = 1; y < ROWS-1; y++) { edges.push({x:0, y}); edges.push({x:COLS-1, y}); }
+  const head = snake[0];
+  edges.sort((a, b) => dist(b, head) - dist(a, head));
+  const pos = edges.slice(0, 12)[Math.floor(Math.random() * 12)];
+  dragon = { x: pos.x, y: pos.y };
+  dragonActive = true;
+  crownsToDispel = 0;
+  dragonAlert.classList.add('visible');
+  crownProgress.style.display = 'flex';
+  updatePips();
+  setFlash('🐉 A dragon approaches!');
+}
+
+function dist(a, b) { return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
+
+function moveDragon() {
+  if (!dragon || !dragonActive) return;
+  const head = snake[0];
+  const dx = head.x - dragon.x;
+  const dy = head.y - dragon.y;
+  // Sometimes take diagonal steps to feel more alive
+  let nx = dragon.x, ny = dragon.y;
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    nx += dx > 0 ? 1 : -1;
+  } else {
+    ny += dy > 0 ? 1 : -1;
+  }
+  dragon = {
+    x: Math.max(0, Math.min(COLS - 1, nx)),
+    y: Math.max(0, Math.min(ROWS - 1, ny))
+  };
+}
+
+function step() {
+  if (!running) return;
+  dir = nextDir;
+  const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+  if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) { endGame('wall'); return; }
+  if (snake.some(s => s.x === head.x && s.y === head.y)) { endGame('self'); return; }
+
+  dragonMoveCounter++;
+  if (dragonActive) {
+    if (dragonMoveCounter % dragonMoveRate() === 0) {
+      moveDragon();
+    }
+    if (dragon && (dragon.x === head.x && dragon.y === head.y)) { endGame('dragon'); return; }
+    if (dragon && snake.some(s => s.x === dragon.x && s.y === dragon.y)) { endGame('dragon'); return; }
+  }
+
+  snake.unshift(head);
+
+  if (head.x === food.x && head.y === food.y) {
+    score++;
+    scoreEl.textContent = score;
+    if (score > best) { best = score; bestEl.textContent = best; }
+
+    if (dragonActive) {
+      crownsToDispel++;
+      updatePips();
+      if (crownsToDispel >= 3) {
+        dragonActive = false;
+        dragon = null;
+        dragonAlert.classList.remove('visible');
+        crownProgress.style.display = 'none';
+        nextDragonAt = score + dragonInterval();
+        setFlash('✨ Dragon banished!');
+      }
+    } else if (score >= nextDragonAt) {
+      spawnDragon();
+    }
+
+    food = spawnItem(dragon ? [dragon] : []);
+  } else {
+    snake.pop();
+  }
+
+  if (flashTimer > 0) { flashTimer--; if (flashTimer === 0) flashMsg = null; }
+  draw();
+}
+
+function updatePips() {
+  for (let i = 0; i < 3; i++) {
+    document.getElementById('pip' + i).classList.toggle('lit', i < crownsToDispel);
+  }
+}
+
+function setFlash(msg) { flashMsg = msg; flashTimer = 50; }
+
+// ---- SNAKE BODY: draw as smooth connected ribbon ----
+function drawSnakeRibbon() {
+  if (snake.length < 2) return;
+
+  const W = GRID * 0.68; // ribbon half-width
+
+  // Build center points
+  const pts = snake.map(s => ({ x: s.x * GRID + GRID / 2, y: s.y * GRID + GRID / 2 }));
+
+  // Helper: perpendicular unit vector between two points
+  function perp(a, b) {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const len = Math.sqrt(dx*dx + dy*dy) || 1;
+    return { x: -dy / len, y: dx / len };
+  }
+
+  // Build left/right edge points for each segment
+  const left = [], right = [];
+  for (let i = 0; i < pts.length; i++) {
+    let p;
+    if (i === 0) p = perp(pts[0], pts[1]);
+    else if (i === pts.length - 1) p = perp(pts[i-1], pts[i]);
+    else {
+      // average of two segments' perps
+      const p1 = perp(pts[i-1], pts[i]);
+      const p2 = perp(pts[i], pts[i+1]);
+      p = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      const ll = Math.sqrt(p.x*p.x + p.y*p.y) || 1;
+      p = { x: p.x/ll, y: p.y/ll };
+    }
+    // taper near tail
+    const taper = 0.5 + 0.5 * (i / (pts.length - 1));
+    const w = W * (1 - 0.4 * (i / (pts.length - 1)));
+    left.push({ x: pts[i].x + p.x * w, y: pts[i].y + p.y * w });
+    right.push({ x: pts[i].x - p.x * w, y: pts[i].y - p.y * w });
+  }
+
+  // Draw filled ribbon
+  ctx.beginPath();
+  ctx.moveTo(left[0].x, left[0].y);
+  for (let i = 1; i < left.length; i++) ctx.lineTo(left[i].x, left[i].y);
+  // round tail end
+  const tailPt = pts[pts.length - 1];
+  ctx.arc(tailPt.x, tailPt.y, W * 0.3, 0, Math.PI * 2);
+  for (let i = right.length - 1; i >= 0; i--) ctx.lineTo(right[i].x, right[i].y);
+  ctx.closePath();
+  ctx.fillStyle = C.snakeBody;
+  ctx.fill();
+  ctx.strokeStyle = C.snakeBorder;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Inner highlight strip
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.strokeStyle = C.snakeInner;
+  ctx.lineWidth = W * 0.55;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.globalAlpha = 0.35;
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.lineCap = 'butt';
+  ctx.lineJoin = 'miter';
+}
+
+// ---- CROWN ----
+function drawCrown(cx, cy, s) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.fillStyle = C.goldMid;
+  ctx.fillRect(-s, s * 0.1, s * 2, s * 0.75);
+  ctx.fillStyle = C.goldBright;
+  ctx.beginPath();
+  ctx.moveTo(-s, s * 0.1);
+  ctx.lineTo(-s, -s * 0.9);
+  ctx.lineTo(-s * 0.38, -s * 0.28);
+  ctx.lineTo(0, -s * 1.0);
+  ctx.lineTo(s * 0.38, -s * 0.28);
+  ctx.lineTo(s, -s * 0.9);
+  ctx.lineTo(s, s * 0.1);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = C.goldDark;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // gems
+  ctx.fillStyle = '#ff3388';
+  ctx.beginPath(); ctx.arc(0, -s * 0.52, s * 0.19, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#aa88ff';
+  ctx.beginPath(); ctx.arc(-s*0.58, -s*0.62, s*0.13, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.58, -s*0.62, s*0.13, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// ---- PRINCESS HEAD ----
+function drawPrincessHead(cx, cy, s) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  // hair puff
+  ctx.fillStyle = '#9920c8';
+  ctx.beginPath(); ctx.ellipse(0, -s*0.15, s*0.75, s*0.9, 0, 0, Math.PI*2); ctx.fill();
+  // side curls
+  ctx.beginPath(); ctx.ellipse(-s*0.62, s*0.1, s*0.28, s*0.38, -0.3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(s*0.62, s*0.1, s*0.28, s*0.38, 0.3, 0, Math.PI*2); ctx.fill();
+  // face
+  ctx.fillStyle = '#f9d0a0';
+  ctx.beginPath(); ctx.ellipse(0, s*0.1, s*0.54, s*0.62, 0, 0, Math.PI*2); ctx.fill();
+  // eyes
+  ctx.fillStyle = '#5a1080';
+  ctx.beginPath(); ctx.ellipse(-s*0.18, s*0.02, s*0.1, s*0.13, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(s*0.18, s*0.02, s*0.1, s*0.13, 0, 0, Math.PI*2); ctx.fill();
+  // eye shine
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(-s*0.14, -s*0.02, s*0.04, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.22, -s*0.02, s*0.04, 0, Math.PI*2); ctx.fill();
+  // rosy cheeks
+  ctx.fillStyle = 'rgba(255,120,160,0.35)';
+  ctx.beginPath(); ctx.ellipse(-s*0.32, s*0.18, s*0.17, s*0.1, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(s*0.32, s*0.18, s*0.17, s*0.1, 0, 0, Math.PI*2); ctx.fill();
+  // smile
+  ctx.strokeStyle = '#c06040';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.arc(0, s*0.15, s*0.2, 0.2, Math.PI - 0.2); ctx.stroke();
+  // mini crown
+  ctx.fillStyle = C.goldBright;
+  ctx.beginPath();
+  ctx.moveTo(-s*0.38, -s*0.6);
+  ctx.lineTo(-s*0.38, -s*0.95);
+  ctx.lineTo(-s*0.16, -s*0.75);
+  ctx.lineTo(0, -s);
+  ctx.lineTo(s*0.16, -s*0.75);
+  ctx.lineTo(s*0.38, -s*0.95);
+  ctx.lineTo(s*0.38, -s*0.6);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = C.goldDark; ctx.lineWidth = 0.8; ctx.stroke();
+  ctx.restore();
+}
+
+// ---- DRAGON (bigger) ----
+function drawDragon(gx, gy) {
+  const cx = gx * GRID + GRID / 2;
+  const cy = gy * GRID + GRID / 2;
+  const s = GRID * 0.9; // bigger than before (was GRID/2 - 1)
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  // tail
+  ctx.fillStyle = C.dragonBody;
+  ctx.beginPath();
+  ctx.moveTo(s*0.3, s*0.5);
+  ctx.quadraticCurveTo(s*0.9, s*0.9, s*0.6, s*1.3);
+  ctx.quadraticCurveTo(s*0.2, s*1.1, s*0.1, s*0.6);
+  ctx.closePath(); ctx.fill();
+
+  // wings (behind body)
+  ctx.fillStyle = C.dragonAccent;
+  // left wing
+  ctx.beginPath();
+  ctx.moveTo(-s*0.25, -s*0.1);
+  ctx.lineTo(-s*1.4, -s*1.1);
+  ctx.lineTo(-s*1.05, -s*0.1);
+  ctx.lineTo(-s*1.3, s*0.45);
+  ctx.lineTo(-s*0.5, s*0.3);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = C.dragonDark; ctx.lineWidth = 1; ctx.stroke();
+  // right wing
+  ctx.beginPath();
+  ctx.moveTo(s*0.25, -s*0.1);
+  ctx.lineTo(s*1.4, -s*1.1);
+  ctx.lineTo(s*1.05, -s*0.1);
+  ctx.lineTo(s*1.3, s*0.45);
+  ctx.lineTo(s*0.5, s*0.3);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = C.dragonDark; ctx.lineWidth = 1; ctx.stroke();
+
+  // body
+  ctx.fillStyle = C.dragonBody;
+  ctx.beginPath(); ctx.ellipse(0, s*0.25, s*0.65, s*0.75, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = C.dragonDark; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // belly
+  ctx.fillStyle = C.dragonMid;
+  ctx.beginPath(); ctx.ellipse(0, s*0.38, s*0.35, s*0.45, 0, 0, Math.PI*2); ctx.fill();
+
+  // neck
+  ctx.fillStyle = C.dragonBody;
+  ctx.beginPath(); ctx.ellipse(0, -s*0.42, s*0.28, s*0.38, 0, 0, Math.PI*2); ctx.fill();
+
+  // head
+  ctx.fillStyle = C.dragonDark;
+  ctx.beginPath(); ctx.ellipse(0, -s*0.9, s*0.45, s*0.42, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#0a3a0a'; ctx.lineWidth = 1; ctx.stroke();
+
+  // snout
+  ctx.fillStyle = C.dragonBody;
+  ctx.beginPath(); ctx.ellipse(0, -s*0.76, s*0.28, s*0.2, 0, 0, Math.PI*2); ctx.fill();
+
+  // eyes
+  ctx.fillStyle = '#ffee00';
+  ctx.beginPath(); ctx.ellipse(-s*0.17, -s*0.95, s*0.12, s*0.12, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(s*0.17, -s*0.95, s*0.12, s*0.12, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.arc(-s*0.17, -s*0.95, s*0.06, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.17, -s*0.95, s*0.06, 0, Math.PI*2); ctx.fill();
+
+  // horns
+  ctx.fillStyle = C.dragonAccent;
+  ctx.beginPath(); ctx.moveTo(-s*0.18,-s*1.22); ctx.lineTo(-s*0.38,-s*1.65); ctx.lineTo(-s*0.08,-s*1.25); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(s*0.18,-s*1.22); ctx.lineTo(s*0.38,-s*1.65); ctx.lineTo(s*0.08,-s*1.25); ctx.closePath(); ctx.fill();
+
+  // nostrils
+  ctx.fillStyle = '#1a5a1a';
+  ctx.beginPath(); ctx.arc(-s*0.1, -s*0.72, s*0.05, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.1, -s*0.72, s*0.05, 0, Math.PI*2); ctx.fill();
+
+  // fire breath flicker
+  const tick = Math.floor(Date.now() / 120) % 3;
+  if (tick < 2) {
+    ctx.fillStyle = C.dragonFire;
+    ctx.beginPath();
+    ctx.moveTo(-s*0.14, -s*0.68);
+    ctx.lineTo(0, -s*(1.6 + tick*0.15));
+    ctx.lineTo(s*0.14, -s*0.68);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = C.dragonFireInner;
+    ctx.beginPath();
+    ctx.moveTo(-s*0.07, -s*0.7);
+    ctx.lineTo(0, -s*(1.3 + tick*0.1));
+    ctx.lineTo(s*0.07, -s*0.7);
+    ctx.closePath(); ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// ---- MAIN DRAW ----
+function draw() {
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // grid
+  ctx.strokeStyle = C.grid;
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x <= COLS; x++) {
+    ctx.beginPath(); ctx.moveTo(x*GRID,0); ctx.lineTo(x*GRID,canvas.height); ctx.stroke();
+  }
+  for (let y = 0; y <= ROWS; y++) {
+    ctx.beginPath(); ctx.moveTo(0,y*GRID); ctx.lineTo(canvas.width,y*GRID); ctx.stroke();
+  }
+
+  // snake ribbon body (skip head segment, draw after)
+  if (snake.length > 1) drawSnakeRibbon();
+
+  // princess head on top
+  const hx = snake[0].x * GRID + GRID / 2;
+  const hy = snake[0].y * GRID + GRID / 2;
+  drawPrincessHead(hx, hy, GRID / 2);
+
+  // crown food
+  drawCrown(food.x * GRID + GRID/2, food.y * GRID + GRID/2, 7);
+
+  // dragon
+  if (dragonActive && dragon) drawDragon(dragon.x, dragon.y);
+
+  // flash
+  if (flashMsg && flashTimer > 0) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, flashTimer / 10);
+    ctx.font = 'bold 15px Lato, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = flashMsg.includes('banished') ? '#208020' : '#c02020';
+    ctx.fillText(flashMsg, canvas.width / 2, canvas.height / 2 - 10);
+    ctx.restore();
+  }
+}
+
+// ---- GAME OVER ----
+function endGame(reason) {
+  running = false;
+  clearInterval(gameLoop);
+  dragonAlert.classList.remove('visible');
+  crownProgress.style.display = 'none';
+  const msgs = { wall:'You hit the castle wall!', self:'Your gown tangled!', dragon:'The dragon caught the princess!' };
+  setTimeout(() => {
+    overlay.style.display = 'flex';
+    overlay.innerHTML = `
+      <div style="font-size:32px">${reason === 'dragon' ? '🐉' : '💔'}</div>
+      <div class="overlay-title">Quest Over</div>
+      <div class="overlay-sub" style="color:#c05070">${msgs[reason]||''}</div>
+      <div class="overlay-score">Score: ${score}</div>
+      ${score === best && score > 0 ? '<div class="overlay-sub" style="color:#9030a0">✨ New record!</div>' : ''}
+      <button class="btn" id="restartBtn">Try Again</button>
+    `;
+    document.getElementById('restartBtn').addEventListener('click', startGame);
+  }, 400);
+}
+
+function startGame() {
+  overlay.style.display = 'none';
+  init();
+  clearInterval(gameLoop);
+  gameLoop = setInterval(step, intervalMs);
+}
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+
+const DIRS = {
+  UP:{x:0,y:-1}, DOWN:{x:0,y:1}, LEFT:{x:-1,y:0}, RIGHT:{x:1,y:0}
+};
+function changeDir(d) {
+  const nd = DIRS[d];
+  if (!nd || (nd.x === -dir.x && nd.y === -dir.y)) return;
+  nextDir = nd;
+}
+
+document.addEventListener('keydown', e => {
+  const map = { ArrowUp:'UP',ArrowDown:'DOWN',ArrowLeft:'LEFT',ArrowRight:'RIGHT',
+    w:'UP',s:'DOWN',a:'LEFT',d:'RIGHT',W:'UP',S:'DOWN',A:'LEFT',D:'RIGHT' };
+  if (map[e.key]) { e.preventDefault(); changeDir(map[e.key]); }
+});
+
+document.querySelectorAll('.dpad-btn').forEach(btn => {
+  const d = btn.dataset.dir;
+  const on = () => { changeDir(d); btn.classList.add('pressed'); };
+  const off = () => btn.classList.remove('pressed');
+  btn.addEventListener('touchstart', e => { e.preventDefault(); on(); }, { passive:false });
+  btn.addEventListener('touchend', off);
+  btn.addEventListener('mousedown', on);
+  btn.addEventListener('mouseup', off);
+  btn.addEventListener('mouseleave', off);
+});
+
+document.querySelectorAll('.speed-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSpeed = btn.dataset.speed;
+    intervalMs = SPEEDS[currentSpeed];
+    if (running) { clearInterval(gameLoop); gameLoop = setInterval(step, intervalMs); }
+  });
+});
+
+draw();
+</script>
+</body>
+</html>
