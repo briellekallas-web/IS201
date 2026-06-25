@@ -1,0 +1,267 @@
+/* Brielle Kallas — Scratch Page Stylesheet */
+
+/* ---- Fonts ---- */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
+
+/* ---- Root Variables ---- */
+:root {
+  --blush: #f5e0e8;
+  --rose: #c8607a;
+  --deep: #2c1a22;
+  --soft: #faf4f6;
+  --muted: #8a6570;
+  --gold: #c9a84c;
+  --line: #e8cdd5;
+}
+
+/* ---- Base ---- */
+body {
+  font-family: 'Lato', sans-serif;
+  background-color: var(--blush);
+  color: var(--deep);
+  margin: 0;
+  padding: 0;
+  line-height: 1.7;
+}
+
+/* ---- Navigation ---- */
+.site-nav {
+  background: var(--deep);
+  padding: 14px 40px;
+  display: flex;
+  gap: 28px;
+  align-items: center;
+}
+
+.site-nav a {
+  color: var(--blush);
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: 'Lato', sans-serif;
+  transition: color 0.2s;
+}
+
+.site-nav a:hover {
+  color: var(--gold);
+}
+
+/* ---- Hero ---- */
+.hero-div {
+  background: var(--deep);
+  color: var(--blush);
+  text-align: center;
+  padding: 80px 40px 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-div::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 60% 40%, rgba(200,96,122,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-div h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 58px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+  color: #fff;
+}
+
+.hero-div .sub {
+  font-size: 15px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* ---- Content Sections (divs for layout) ---- */
+.content-div {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 56px 32px;
+}
+
+.two-col-div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+  margin: 40px 0;
+}
+
+.sidebar-div {
+  background: var(--soft);
+  border-left: 3px solid var(--rose);
+  padding: 28px 24px;
+  border-radius: 2px;
+}
+
+/* ---- Section Headings ---- */
+h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  color: var(--rose);
+  margin-bottom: 16px;
+  font-weight: 400;
+  font-style: italic;
+}
+
+h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: var(--deep);
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 15px;
+  color: var(--deep);
+  margin-bottom: 14px;
+}
+
+/* ---- Nested Lists ---- */
+ol.era-list {
+  margin-left: 20px;
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  color: var(--deep);
+}
+
+ol.era-list li {
+  margin-bottom: 10px;
+}
+
+ul.style-list {
+  margin-left: 22px;
+  margin-top: 6px;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+  color: var(--muted);
+  list-style: disc;
+}
+
+ul.style-list li {
+  margin-bottom: 4px;
+}
+
+/* ---- Images ---- */
+.fashion-img {
+  width: 100%;
+  border-radius: 4px;
+  display: block;
+  box-shadow: 0 4px 18px rgba(44,26,34,0.12);
+}
+
+.img-caption {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ---- Video Embed ---- */
+.video-wrap {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 4px 18px rgba(44,26,34,0.12);
+}
+
+.video-wrap iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+/* ---- Tableau Embed ---- */
+.tableau-section {
+  background: var(--soft);
+  padding: 48px 32px;
+  text-align: center;
+}
+
+.tableau-section h2 {
+  text-align: center;
+}
+
+/* ---- Anchor / Jump Links ---- */
+.anchor-label {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* ---- Divider ---- */
+.divider {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 40px 0;
+}
+
+/* ---- App Link Button ---- */
+.app-link-div {
+  background: var(--deep);
+  text-align: center;
+  padding: 48px 32px;
+}
+
+.app-link-div p {
+  color: var(--blush);
+  font-size: 15px;
+}
+
+.cta-btn {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 14px 36px;
+  background: var(--rose);
+  color: #fff;
+  font-family: 'Lato', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+
+.cta-btn:hover {
+  background: var(--gold);
+  color: var(--deep);
+}
+
+/* ---- Footer ---- */
+footer {
+  background: var(--deep);
+  color: var(--muted);
+  text-align: center;
+  padding: 24px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 680px) {
+  .two-col-div {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-div h1 {
+    font-size: 36px;
+  }
+}

@@ -138,9 +138,8 @@
         <a href="https://www.linkedin.com/in/brielle-kallas-26a26a3a0" target="_blank">www.linkedin.com/in/brielle-kallas-26a26a3a0</a>
       </div>
       <div style="margin-top:12px; text-align:center;">
-<a href="princess-snake.html" style="display:inline-block; padding:8px 14px; background:#1f3a5f; color:#fff; border-radius:6px; text-decoration:none; font-weight:600; margin-right:8px;">Play Princess Snake →</a>
-      <a href="scratch.html" style="display:inline-block; padding:8px 14px; background:#7a2a6a; color:#fff; border-radius:6px; text-decoration:none; font-weight:600;">Explore Fashion Page →</a>
-    </div>
+        <a href="princess-snake.html" style="display:inline-block; padding:8px 14px; background:#1f3a5f; color:#fff; border-radius:6px; text-decoration:none; font-weight:600;">Play Princess Snake →</a>
+      </div>
     </header>
 
     <section class="section education">
